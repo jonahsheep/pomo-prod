@@ -18,6 +18,16 @@
     });
   },
 
+  async updateSettings(partial) {
+    Object.assign(this.settings, partial);
+    await this.save();
+  },
+
+  async reloadSettings() {
+    const { settings } = await chrome.storage.local.get(CONSTANTS.STORAGE.SETTINGS);
+    if (settings) this.settings = settings;
+  },
+
   async startWork() {
     this.timer.phase = CONSTANTS.PHASES.WORK;
     this.timer.isRunning = true;
@@ -71,6 +81,7 @@
 
   async handlePhaseComplete() {
     this.timer.isRunning = false;
+    await this.save();
     if (this.timer.phase === CONSTANTS.PHASES.WORK) {
       await this.onWorkComplete();
       return CONSTANTS.PHASES.WORK;
@@ -99,3 +110,14 @@
     };
   }
 };
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local") {
+    if (changes[CONSTANTS.STORAGE.SETTINGS]) {
+      TimerState.settings = changes[CONSTANTS.STORAGE.SETTINGS].newValue;
+    }
+    if (changes[CONSTANTS.STORAGE.TIMER]) {
+      TimerState.timer = changes[CONSTANTS.STORAGE.TIMER].newValue;
+    }
+  }
+});
