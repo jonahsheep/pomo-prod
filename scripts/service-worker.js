@@ -1,4 +1,36 @@
-﻿const TimerState = {
+﻿const NotificationManager = {
+  async show(type, settings) {
+    const titles = {
+      [CONSTANTS.NOTIFICATIONS.BREAK]: "Break Time!",
+      [CONSTANTS.NOTIFICATIONS.WORK]: "Focus Time",
+      [CONSTANTS.NOTIFICATIONS.DONE]: "Exercise Complete?"
+    };
+
+    const messages = {
+      link: "Opening your break link now. Enjoy your break!",
+      exercise: "Time to exercise! Come back and confirm when done.",
+      meditation: "Time to meditate. Focus on your breath."
+    };
+
+    const icon = type === CONSTANTS.NOTIFICATIONS.WORK ? "icons/icon48.png" : "icons/icon48.png";
+
+    chrome.notifications.create(type, {
+      type: "basic",
+      iconUrl: icon,
+      title: titles[type] || "Focus Break",
+      message: type === CONSTANTS.NOTIFICATIONS.BREAK
+        ? (messages[settings.breakType] || "Take a break!")
+        : (type === CONSTANTS.NOTIFICATIONS.WORK ? "Work session started. Stay focused!" : "Did you finish your exercise?"),
+      priority: 2
+    });
+  },
+
+  async clear(type) {
+    chrome.notifications.clear(type);
+  }
+};
+
+const TimerState = {
   timer: null,
   settings: null,
 
@@ -35,6 +67,7 @@
     this.timer.startedAt = Date.now();
     this.timer.meditationRemaining = 0;
     await this.save();
+    NotificationManager.show(CONSTANTS.NOTIFICATIONS.WORK, this.settings);
     this.startAlarm();
   },
 
@@ -47,6 +80,7 @@
       this.timer.meditationRemaining = this.settings.breakDuration * 60;
     }
     await this.save();
+    NotificationManager.show(CONSTANTS.NOTIFICATIONS.BREAK, this.settings);
     TabManager.openBreak(this.settings);
     this.startAlarm();
   },
@@ -135,6 +169,7 @@
 
   async onBreakComplete() {
     await TabManager.closeBreak();
+    NotificationManager.show(CONSTANTS.NOTIFICATIONS.WORK, this.settings);
     await this.startWork();
   },
 
@@ -212,5 +247,11 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === CONSTANTS.ALARM) {
     TimerState.onAlarm();
+  }
+});
+
+chrome.notifications.onClicked.addListener((notificationId) => {
+  if (notificationId === CONSTANTS.NOTIFICATIONS.BREAK || notificationId === CONSTANTS.NOTIFICATIONS.WORK) {
+    chrome.tabs.create({ url: chrome.runtime.getURL("timer/timer.html") });
   }
 });
