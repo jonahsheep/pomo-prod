@@ -255,3 +255,47 @@ chrome.notifications.onClicked.addListener((notificationId) => {
     chrome.tabs.create({ url: chrome.runtime.getURL("timer/timer.html") });
   }
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case "getStatus":
+      sendResponse(TimerState.getStatus());
+      break;
+
+    case "start":
+      TimerState.startWork().then(() => sendResponse({ ok: true }));
+      break;
+
+    case "pause":
+      TimerState.pause().then(() => sendResponse({ ok: true }));
+      break;
+
+    case "resume":
+      TimerState.resume().then(() => sendResponse({ ok: true }));
+      break;
+
+    case "reset":
+      TimerState.reset().then(() => sendResponse({ ok: true }));
+      break;
+
+    case "exerciseDone":
+      TimerState.onBreakComplete().then(() => sendResponse({ ok: true }));
+      break;
+
+    case "updateSettings":
+      TimerState.updateSettings(request.settings).then(() => sendResponse({ ok: true }));
+      break;
+
+    case "getSettings":
+      sendResponse(TimerState.settings);
+      break;
+
+    default:
+      sendResponse({ error: "unknown action" });
+  }
+  return true;
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  TimerState.init();
+});
