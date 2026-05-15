@@ -47,6 +47,7 @@
       this.timer.meditationRemaining = this.settings.breakDuration * 60;
     }
     await this.save();
+    TabManager.openBreak(this.settings);
     this.startAlarm();
   },
 
@@ -133,6 +134,7 @@
   },
 
   async onBreakComplete() {
+    await TabManager.closeBreak();
     await this.startWork();
   },
 
@@ -147,6 +149,54 @@
     };
   }
 };
+
+const TabManager = {
+  async openBreak(settings) {
+    const { linkBreak } = await chrome.storage.local.get(CONSTANTS.STORAGE.LINK_BREAK);
+    const stored = linkBreak || getDefaultLinkBreak();
+
+    if (settings.breakType !== CONSTANTS.BREAK_TYPES.LINK || !settings.linkUrl) return;
+
+    const url = settings.linkUrl;
+
+    if (stored.tabId) {
+      try {
+        await chrome.tabs.update(stored.tabId, { active: true, url });
+        await chrome.windows.update(stored.windowId, { focused: true });
+        return;
+      } catch (e) {
+        stored.tabId = null;
+      }
+    }
+
+    const tab = await chrome.tabs.create({ url, active: true });
+    await chrome.storage.local.set({
+      [CONSTANTS.STORAGE.LINK_BREAK]: {
+        tabId: tab.id,
+        windowId: tab.windowId,
+        url: settings.linkUrl
+      }
+    });
+  },
+
+  async closeBreak() {
+    const { linkBreak } = await chrome.storage.local.get(CONSTANTS.STORAGE.LINK_BREAK);
+    if (!linkBreak || !linkBreak.tabId) return;
+
+    try {
+      await chrome.tabs.remove(linkBreak.tabId);
+    } catch (e) {
+    }
+
+    await chrome.storage.local.set({
+      [CONSTANTS.STORAGE.LINK_BREAK]: getDefaultLinkBreak()
+    });
+  }
+};
+
+chrome.runtime.onInstalled.addListener(() => {
+  TimerState.init();
+});
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local") {
