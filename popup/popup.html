@@ -7,7 +7,29 @@
   <title>Focus Break</title>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div id="phase-label">Ready</div>
+    <div id="timer-display">25:00</div>
+    <div id="break-type-badge"></div>
+    <div id="controls">
+      <button id="btn-start" class="btn primary">Start</button>
+      <button id="btn-pause" class="btn secondary" style="display:none">Pause</button>
+      <button id="btn-reset" class="btn ghost">Reset</button>
+    </div>
+    <div id="break-activity" style="display:none">
+      <div id="exercise-prompt">
+        <p>Did you finish your exercise?</p>
+        <button id="btn-exercise-done" class="btn primary">Done</button>
+      </div>
+      <div id="meditation-timer">
+        <div>Meditation remaining</div>
+        <div id="meditation-display">5:00</div>
+      </div>
+    </div>
+    <div id="open-timer-link">
+      <a href="#" id="open-full-timer">Open Full Timer</a>
+    </div>
+  </div>
   <script src="../scripts/common.js"></script>
   <script src="popup.js"></script>
 </body>
