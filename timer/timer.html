@@ -7,7 +7,44 @@
   <title>Focus Break Timer</title>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div id="header">
+      <h1>Focus Break</h1>
+      <div id="phase-badge">Ready</div>
+    </div>
+
+    <div id="timer-section">
+      <div id="timer-display">25:00</div>
+      <div id="timer-sub">Work session</div>
+    </div>
+
+    <div id="controls">
+      <button id="btn-start" class="btn primary">Start Working</button>
+      <button id="btn-pause" class="btn secondary">Pause</button>
+      <button id="btn-reset" class="btn ghost">Reset</button>
+    </div>
+
+    <div id="break-activity" style="display:none">
+      <div id="exercise-section">
+        <div class="activity-icon">🏋️</div>
+        <h2>Exercise Time</h2>
+        <p>Complete your exercise and click done when finished.</p>
+        <button id="btn-exercise-done" class="btn primary large">I Finished My Exercise</button>
+      </div>
+      <div id="meditation-section" style="display:none">
+        <div class="activity-icon">🧘</div>
+        <h2>Meditation</h2>
+        <div id="meditation-timer">5:00</div>
+        <p>Focus on your breath. Let thoughts pass by.</p>
+      </div>
+    </div>
+
+    <div id="settings-summary">
+      <span id="work-setting">Work: 25m</span>
+      <span id="break-setting">Break: 5m</span>
+      <span id="break-type-setting"></span>
+    </div>
+  </div>
   <script src="../scripts/common.js"></script>
   <script src="timer.js"></script>
 </body>
