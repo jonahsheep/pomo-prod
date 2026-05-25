@@ -39,6 +39,24 @@ const TimerState = {
     ]);
     this.settings = settings || getDefaultSettings();
     this.timer = timer || getDefaultTimer();
+    this.recoverTimer();
+  },
+
+  recoverTimer() {
+    if (!this.timer.isRunning || !this.timer.startedAt) return;
+    const elapsed = Math.floor((Date.now() - this.timer.startedAt) / 1000);
+    const remaining = this.timer.timeRemaining - elapsed;
+    if (remaining <= 0) {
+      this.timer.timeRemaining = 0;
+      this.timer.isRunning = false;
+      this.timer.startedAt = null;
+      this.save();
+      this.handlePhaseComplete();
+    } else {
+      this.timer.timeRemaining = remaining;
+      this.save();
+      this.startAlarm();
+    }
   },
 
   async save() {
@@ -50,6 +68,9 @@ const TimerState = {
 
   async updateSettings(partial) {
     Object.assign(this.settings, partial);
+    if (this.timer.phase === CONSTANTS.PHASES.IDLE) {
+      this.timer.timeRemaining = this.settings.workDuration * 60;
+    }
     await this.save();
   },
 
@@ -102,8 +123,9 @@ const TimerState = {
   async reset() {
     this.timer = getDefaultTimer();
     this.timer.timeRemaining = this.settings.workDuration * 60;
-    await this.save();
     this.stopAlarm();
+    await TabManager.closeBreak();
+    await this.save();
   },
 
   calculateRemaining() {
@@ -121,7 +143,9 @@ const TimerState = {
   },
 
   startAlarm() {
-    chrome.alarms.create(CONSTANTS.ALARM, { periodInMinutes: 1 });
+    chrome.alarms.clear(CONSTANTS.ALARM, () => {
+      chrome.alarms.create(CONSTANTS.ALARM, { periodInMinutes: 1 });
+    });
   },
 
   stopAlarm() {
@@ -150,6 +174,7 @@ const TimerState = {
   async handlePhaseComplete() {
     this.timer.isRunning = false;
     this.timer.startedAt = null;
+    this.stopAlarm();
     await this.save();
     if (this.timer.phase === CONSTANTS.PHASES.WORK) {
       await this.onWorkComplete();
@@ -231,9 +256,12 @@ const TabManager = {
   }
 };
 
-chrome.runtime.onInstalled.addListener(() => {
+function initExtension() {
   TimerState.init();
-});
+}
+
+chrome.runtime.onInstalled.addListener(initExtension);
+chrome.runtime.onStartup.addListener(initExtension);
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local") {
@@ -253,9 +281,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 chrome.notifications.onClicked.addListener((notificationId) => {
-  if (notificationId === CONSTANTS.NOTIFICATIONS.BREAK || notificationId === CONSTANTS.NOTIFICATIONS.WORK) {
-    chrome.tabs.create({ url: chrome.runtime.getURL("timer/timer.html") });
-  }
+  chrome.tabs.create({ url: chrome.runtime.getURL("timer/timer.html") });
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -292,8 +318,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ error: "unknown action" });
   }
   return true;
-});
-
-chrome.runtime.onStartup.addListener(() => {
-  TimerState.init();
 });
