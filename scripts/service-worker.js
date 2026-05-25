@@ -1,4 +1,6 @@
-﻿const NotificationManager = {
+﻿importScripts('./common.js');
+
+const NotificationManager = {
   async show(type, settings) {
     const titles = {
       [CONSTANTS.NOTIFICATIONS.BREAK]: "Break Time!",
@@ -29,8 +31,8 @@
 };
 
 const TimerState = {
-  timer: null,
-  settings: null,
+  timer: getDefaultTimer(),
+  settings: getDefaultSettings(),
 
   async init() {
     const { settings, timer } = await chrome.storage.local.get([
@@ -256,12 +258,10 @@ const TabManager = {
   }
 };
 
-function initExtension() {
-  TimerState.init();
-}
+TimerState.init();
 
-chrome.runtime.onInstalled.addListener(initExtension);
-chrome.runtime.onStartup.addListener(initExtension);
+chrome.runtime.onInstalled.addListener(() => TimerState.init());
+chrome.runtime.onStartup.addListener(() => TimerState.init());
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local") {
