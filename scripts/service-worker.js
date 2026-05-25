@@ -12,11 +12,9 @@
       meditation: "Time to meditate. Focus on your breath."
     };
 
-    const icon = type === CONSTANTS.NOTIFICATIONS.WORK ? "icons/icon48.png" : "icons/icon48.png";
-
     chrome.notifications.create(type, {
       type: "basic",
-      iconUrl: icon,
+      iconUrl: "icons/icon48.png",
       title: titles[type] || "Focus Break",
       message: type === CONSTANTS.NOTIFICATIONS.BREAK
         ? (messages[settings.breakType] || "Take a break!")
@@ -168,9 +166,13 @@ const TimerState = {
   },
 
   async onBreakComplete() {
-    await TabManager.closeBreak();
-    NotificationManager.show(CONSTANTS.NOTIFICATIONS.WORK, this.settings);
-    await this.startWork();
+    if (this.settings.breakType === CONSTANTS.BREAK_TYPES.LINK) {
+      await TabManager.closeBreak();
+    }
+    if (this.settings.breakType !== CONSTANTS.BREAK_TYPES.EXERCISE) {
+      NotificationManager.show(CONSTANTS.NOTIFICATIONS.WORK, this.settings);
+      await this.startWork();
+    }
   },
 
   getStatus() {
@@ -191,13 +193,13 @@ const TabManager = {
     const stored = linkBreak || getDefaultLinkBreak();
 
     if (settings.breakType !== CONSTANTS.BREAK_TYPES.LINK || !settings.linkUrl) return;
-
     const url = settings.linkUrl;
 
     if (stored.tabId) {
       try {
+        const tab = await chrome.tabs.get(stored.tabId);
         await chrome.tabs.update(stored.tabId, { active: true, url });
-        await chrome.windows.update(stored.windowId, { focused: true });
+        await chrome.windows.update(tab.windowId, { focused: true });
         return;
       } catch (e) {
         stored.tabId = null;
@@ -261,35 +263,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "getStatus":
       sendResponse(TimerState.getStatus());
       break;
-
     case "start":
       TimerState.startWork().then(() => sendResponse({ ok: true }));
       break;
-
     case "pause":
       TimerState.pause().then(() => sendResponse({ ok: true }));
       break;
-
     case "resume":
       TimerState.resume().then(() => sendResponse({ ok: true }));
       break;
-
     case "reset":
       TimerState.reset().then(() => sendResponse({ ok: true }));
       break;
-
     case "exerciseDone":
-      TimerState.onBreakComplete().then(() => sendResponse({ ok: true }));
+      TimerState.startWork().then(() => sendResponse({ ok: true }));
       break;
-
     case "updateSettings":
       TimerState.updateSettings(request.settings).then(() => sendResponse({ ok: true }));
       break;
-
     case "getSettings":
       sendResponse(TimerState.settings);
       break;
-
     default:
       sendResponse({ error: "unknown action" });
   }
