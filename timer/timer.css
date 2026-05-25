@@ -12,6 +12,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: background 1s ease;
+}
+
+body.meditation-mode {
+  background: linear-gradient(135deg, #1a2a1a 0%, #1e3a1e 50%, #0f3410 100%);
 }
 
 #app {
@@ -54,6 +59,11 @@ body {
 #phase-badge.break {
   background: #f7a84a;
   color: #1a1a2e;
+}
+
+#phase-badge.break.meditation {
+  background: #5a9a5a;
+  color: white;
 }
 
 #timer-section {
@@ -126,6 +136,11 @@ body {
   margin-bottom: 32px;
 }
 
+#break-activity.meditation-active {
+  background: #1e3a1e;
+  border: 1px solid #3a6a3a;
+}
+
 .activity-icon {
   font-size: 48px;
   margin-bottom: 12px;
@@ -147,7 +162,7 @@ body {
   font-size: 56px;
   font-weight: 200;
   font-variant-numeric: tabular-nums;
-  color: #f7a84a;
+  color: #7ab87a;
   margin: 16px 0;
 }
 

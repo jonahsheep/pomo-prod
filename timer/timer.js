@@ -24,14 +24,18 @@ function updateDisplay() {
     [CONSTANTS.PHASES.IDLE]: "Ready"
   };
 
+  const isMeditation = phase === CONSTANTS.PHASES.BREAK && settings.breakType === CONSTANTS.BREAK_TYPES.MEDITATION;
+
   badge.textContent = phaseNames[phase] || "Ready";
-  badge.className = phase === CONSTANTS.PHASES.WORK ? "work" : phase === CONSTANTS.PHASES.BREAK ? "break" : "";
+  badge.className = phase === CONSTANTS.PHASES.WORK ? "work" : phase === CONSTANTS.PHASES.BREAK ? (isMeditation ? "break meditation" : "break") : "";
+
+  document.body.className = isMeditation ? "meditation-mode" : "";
 
   timerDisplay.textContent = formatTime(timeRemaining);
   timerSub.textContent = phase === CONSTANTS.PHASES.WORK
     ? "Stay focused. You've got this."
     : phase === CONSTANTS.PHASES.BREAK
-    ? "Take a proper break."
+    ? (isMeditation ? "Breathe deeply. Let thoughts pass by." : "Take a proper break.")
     : "Press Start to begin a focus session.";
 
   const showBtns = phase !== CONSTANTS.PHASES.IDLE;
@@ -49,10 +53,11 @@ function updateDisplay() {
 
   if (phase === CONSTANTS.PHASES.BREAK) {
     breakActivity.style.display = "block";
+    breakActivity.className = isMeditation ? "meditation-active" : "";
     if (settings.breakType === CONSTANTS.BREAK_TYPES.EXERCISE) {
       exerciseSection.style.display = "block";
       meditationSection.style.display = "none";
-    } else if (settings.breakType === CONSTANTS.BREAK_TYPES.MEDITATION) {
+    } else if (isMeditation) {
       exerciseSection.style.display = "none";
       meditationSection.style.display = "block";
       meditationTimer.textContent = formatTime(meditationRemaining);
