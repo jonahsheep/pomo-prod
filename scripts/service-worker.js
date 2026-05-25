@@ -264,7 +264,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse(TimerState.getStatus());
       break;
     case "start":
-      TimerState.startWork().then(() => sendResponse({ ok: true }));
+      if (TimerState.timer.phase === CONSTANTS.PHASES.BREAK && TimerState.settings.breakType === CONSTANTS.BREAK_TYPES.EXERCISE) {
+        sendResponse({ ok: false, error: "Complete exercise first" });
+      } else {
+        TimerState.startWork().then(() => sendResponse({ ok: true }));
+      }
       break;
     case "pause":
       TimerState.pause().then(() => sendResponse({ ok: true }));
