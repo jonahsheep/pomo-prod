@@ -124,6 +124,16 @@ input[type="number"] {
   margin-top: 2px;
 }
 
+.type-description {
+  font-size: 13px;
+  color: #667788;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #1a1a2e;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+
 .hint {
   display: block;
   font-size: 12px;

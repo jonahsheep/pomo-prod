@@ -1,15 +1,20 @@
 ﻿async function loadSettings() {
-  const settings = await chrome.runtime.sendMessage({ action: "getSettings" });
-  if (!settings) return;
+  try {
+    const settings = await chrome.runtime.sendMessage({ action: "getSettings" });
+    if (settings) { applySettings(settings); return; }
+  } catch (e) {}
+  const { settings } = await chrome.storage.local.get(CONSTANTS.STORAGE.SETTINGS);
+  applySettings(settings || getDefaultSettings());
+}
 
+function applySettings(settings) {
   document.getElementById("work-duration").value = settings.workDuration;
   document.getElementById("break-duration").value = settings.breakDuration;
-
   const breakRadio = document.querySelector(`input[name="break-type"][value="${settings.breakType}"]`);
   if (breakRadio) breakRadio.checked = true;
-
   document.getElementById("link-url").value = settings.linkUrl || "";
   toggleLinkField(settings.breakType);
+  toggleBreakTypeDesc(settings.breakType);
 }
 
 function toggleLinkField(breakType) {
@@ -17,9 +22,20 @@ function toggleLinkField(breakType) {
     breakType === CONSTANTS.BREAK_TYPES.LINK ? "block" : "none";
 }
 
+function toggleBreakTypeDesc(breakType) {
+  const desc = document.getElementById("break-type-desc");
+  const texts = {
+    [CONSTANTS.BREAK_TYPES.LINK]: "Opens your configured URL during break time. Great for YouTube, music, or reading.",
+    [CONSTANTS.BREAK_TYPES.EXERCISE]: "Pause for physical activity. You must confirm completion before the next work session starts.",
+    [CONSTANTS.BREAK_TYPES.MEDITATION]: "A quiet countdown timer appears. Focus on your breath until it's time to work again."
+  };
+  desc.textContent = texts[breakType] || "";
+}
+
 document.querySelectorAll('input[name="break-type"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     toggleLinkField(radio.value);
+    toggleBreakTypeDesc(radio.value);
   });
 });
 
@@ -42,10 +58,10 @@ document.getElementById("btn-save").addEventListener("click", async () => {
     return;
   }
 
-  await chrome.runtime.sendMessage({
-    action: "updateSettings",
-    settings: { workDuration, breakDuration, breakType, linkUrl }
-  });
+  const settings = { workDuration, breakDuration, breakType, linkUrl };
+  await chrome.storage.local.set({ [CONSTANTS.STORAGE.SETTINGS]: settings });
+
+  chrome.runtime.sendMessage({ action: "updateSettings", settings }).catch(() => {});
 
   const status = document.getElementById("save-status");
   status.textContent = "Settings saved!";

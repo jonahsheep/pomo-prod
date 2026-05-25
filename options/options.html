@@ -22,7 +22,7 @@
       </div>
     </div>
 
-    <div class="section">
+      <div class="section">
       <h2>Break Activity</h2>
       <div class="field">
         <label>What do you want to do during breaks?</label>
@@ -30,24 +30,25 @@
           <label class="radio-option">
             <input type="radio" name="break-type" value="link" checked>
             <span>Watch a Link</span>
-            <span class="radio-desc">Opens a URL during break time</span>
+            <span class="radio-desc">Opens a URL during break time for a mental reset</span>
           </label>
           <label class="radio-option">
             <input type="radio" name="break-type" value="exercise">
             <span>Exercise</span>
-            <span class="radio-desc">Must confirm completion before working again</span>
+            <span class="radio-desc">Forced exercise — must confirm before working again</span>
           </label>
           <label class="radio-option">
             <input type="radio" name="break-type" value="meditation">
             <span>Meditation</span>
-            <span class="radio-desc">Guided meditation timer during break</span>
+            <span class="radio-desc">Guided meditation countdown — relaxes you into the next focus session</span>
           </label>
         </div>
+        <p id="break-type-desc" class="type-description"></p>
       </div>
-      <div class="field" id="link-url-field">
+      <div class="field" id="link-url-field" style="display:none">
         <label for="link-url">Break Link URL</label>
         <input type="url" id="link-url" placeholder="https://www.youtube.com/watch?v=...">
-        <span class="hint">Paste a YouTube video, meditation, or any website URL</span>
+        <span class="hint">Paste a YouTube video, meditation music, or any relaxing website URL</span>
       </div>
     </div>
 
