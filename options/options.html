@@ -7,7 +7,55 @@
   <title>Focus Break Settings</title>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <h1>Focus Break Settings</h1>
+
+    <div class="section">
+      <h2>Timer Durations</h2>
+      <div class="field">
+        <label for="work-duration">Work Duration (minutes)</label>
+        <input type="number" id="work-duration" min="1" max="180" value="25">
+      </div>
+      <div class="field">
+        <label for="break-duration">Break Duration (minutes)</label>
+        <input type="number" id="break-duration" min="1" max="60" value="5">
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Break Activity</h2>
+      <div class="field">
+        <label>What do you want to do during breaks?</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="break-type" value="link" checked>
+            <span>Watch a Link</span>
+            <span class="radio-desc">Opens a URL during break time</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="break-type" value="exercise">
+            <span>Exercise</span>
+            <span class="radio-desc">Must confirm completion before working again</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="break-type" value="meditation">
+            <span>Meditation</span>
+            <span class="radio-desc">Guided meditation timer during break</span>
+          </label>
+        </div>
+      </div>
+      <div class="field" id="link-url-field">
+        <label for="link-url">Break Link URL</label>
+        <input type="url" id="link-url" placeholder="https://www.youtube.com/watch?v=...">
+        <span class="hint">Paste a YouTube video, meditation, or any website URL</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-save" class="btn primary">Save Settings</button>
+      <span id="save-status"></span>
+    </div>
+  </div>
   <script src="../scripts/common.js"></script>
   <script src="options.js"></script>
 </body>
